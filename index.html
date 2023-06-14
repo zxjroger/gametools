@@ -7,6 +7,30 @@
             height: 400px;
             width: 100%;
         }
+
+        body {
+            padding: 10px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+        }
+
+        #result {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -20,7 +44,7 @@
         <label for="locations">Locations (Latitude, Longitude):</label>
     </div>
     <div>
-        <textarea id="locations" rows="5" cols="50" placeholder="Enter locations"></textarea>
+        <textarea id="locations" rows="5" placeholder="Enter locations"></textarea>
     </div>
 
     <div>
