@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Route Planner</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         #map {
             height: 400px;
@@ -168,21 +169,21 @@
             result.innerHTML = "<h2>Optimized Route:</h2>";
             var routeText = "";
             for (var k = 0; k < route.length; k++) {
-              var location = coordinates[route[k]];
-              var locationId = "location-" + k;
-              result.innerHTML +=
-                '<div class="location" id="' +
-                locationId +
-                '">' +
-                '<span>' +
-                location[0] +
-                ", " +
-                location[1] +
-                '</span>' +
-                '<button onclick="copyLocation(\'' +
-                locationId +
-                "')\">Copy</button></div>";
-              routeText += location[0] + ", " + location[1] + "\n";
+                var location = coordinates[route[k]];
+                var locationId = "location-" + k;
+                result.innerHTML +=
+                    '<div class="location" id="' +
+                    locationId +
+                    '">' +
+                    '<span>' +
+                    location[0] +
+                    ", " +
+                    location[1] +
+                    '</span>' +
+                    '<button onclick="copyLocation(\'' +
+                    locationId +
+                    "')\">Copy</button></div>";
+                routeText += location[0] + ", " + location[1] + "\n";
             }
         }
 
@@ -239,25 +240,24 @@
         }
 
         function copyLocation(locationId) {
-          var locationElement = document.getElementById(locationId);
-          var coordinates = locationElement.innerText.split(",");
-          var latitude = coordinates[0].trim();
-          var longitude = coordinates[1].trim();
+            var locationElement = document.getElementById(locationId);
+            var coordinates = locationElement.innerText.split(",");
+            var latitude = coordinates[0].trim();
+            var longitude = coordinates[1].trim();
 
-          var isStrikethrough = locationElement.style.textDecoration === "line-through";
+            var isStrikethrough = locationElement.classList.contains("strikethrough");
 
-          if (isStrikethrough) {
-            // Remove the strikethrough line
-            locationElement.style.textDecoration = "";
-          } else {
-            // Copy the coordinates to the clipboard
-            navigator.clipboard.writeText(latitude + ", " + longitude);
+            if (isStrikethrough) {
+                // Remove the strikethrough line
+                locationElement.classList.remove("strikethrough");
+            } else {
+                // Copy the coordinates to the clipboard
+                navigator.clipboard.writeText(latitude + ", " + longitude);
 
-            // Apply the strikethrough line
-            locationElement.style.textDecoration = "line-through";
-          }
-}
-
+                // Apply the strikethrough line
+                locationElement.classList.add("strikethrough");
+            }
+        }
     </script>
 </body>
 </html>
