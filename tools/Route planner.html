@@ -60,8 +60,8 @@
 <body>
     <h1>Route Planner</h1>
     <div>
-        <label for="start-coordinates">Start Coordinates (Latitude, Longitude):</label>
-        <input type="text" id="start-coordinates" placeholder="Start Coordinates (Latitude, Longitude)">
+        <label for="center-coordinates">Center Coordinates (Latitude, Longitude):</label>
+        <input type="text" id="center-coordinates" placeholder="Start Coordinates (Latitude, Longitude)">
     </div>
 
     <div>
@@ -82,7 +82,7 @@
 
     <script>
         function calculateRoute() {
-            var startCoordinates = document.getElementById("start-coordinates").value;
+            var startCoordinates = document.getElementById("center-coordinates").value;
             var locations = document.getElementById("locations").value;
             var radius = parseFloat(document.getElementById("radius").value);
 
@@ -241,7 +241,7 @@
 
         function copyLocation(locationId) {
             var locationElement = document.getElementById(locationId);
-            var coordinates = locationElement.innerText.split(",");
+            var coordinates = locationElement.firstChild.textContent.split(",");
             var latitude = coordinates[0].trim();
             var longitude = coordinates[1].trim();
 
