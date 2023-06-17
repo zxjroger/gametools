@@ -24,12 +24,35 @@
 
         button {
             display: block;
-            width: 100%;
-            padding: 10px;
+            width: 100px;
+            padding: 5px;
         }
 
         #result {
             margin-top: 10px;
+        }
+
+        .location {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .location button {
+            padding: 5px;
+            font-size: 12px;
+        }
+
+        .location.strikethrough {
+            text-decoration: line-through;
+        }
+
+        @media (max-width: 500px) {
+            body {
+                padding: 5px;
+                max-width: 100%;
+            }
         }
     </style>
 </head>
@@ -65,13 +88,12 @@
             // Parse start coordinates string into latitude and longitude
             var startLat;
             var startLng;
+            var startSpecified = false;
             if (startCoordinates.includes(",")) {
                 var startCoords = startCoordinates.split(",").map(parseFloat);
                 startLat = startCoords[0];
                 startLng = startCoords[1];
-            } else {
-                alert("Invalid format for start coordinates. Please use the format: Latitude, Longitude");
-                return;
+                startSpecified = true;
             }
 
             // Parse locations string into an array of coordinates
@@ -84,14 +106,44 @@
                     return [lat, lng];
                 });
 
-            // Filter locations based on the specified radius
-            coordinates = coordinates.filter(location => {
-                var distance = calculateDistance(startLat, startLng, location[0], location[1]);
-                return distance <= radius;
-            });
+            // Filter locations based on the specified radius and start coordinates (if specified)
+            if (startSpecified) {
+                coordinates = coordinates.filter(location => {
+                    var distance = calculateDistance(startLat, startLng, location[0], location[1]);
+                    return distance <= radius;
+                });
+            } else {
+                // If no start coordinates specified, find circular area with the most locations
+                var maxLocationCount = 0;
+                var bestCenter = null;
 
-            // Add the start location to the beginning of the coordinates array
-            coordinates.unshift([startLat, startLng]);
+                for (var i = 0; i < coordinates.length; i++) {
+                    var centerLat = coordinates[i][0];
+                    var centerLng = coordinates[i][1];
+                    var count = 0;
+
+                    for (var j = 0; j < coordinates.length; j++) {
+                        var locationLat = coordinates[j][0];
+                        var locationLng = coordinates[j][1];
+                        var distance = calculateDistance(centerLat, centerLng, locationLat, locationLng);
+                        if (distance <= radius) {
+                            count++;
+                        }
+                    }
+
+                    if (count > maxLocationCount) {
+                        maxLocationCount = count;
+                        bestCenter = [centerLat, centerLng];
+                    }
+                }
+
+                if (bestCenter) {
+                    coordinates = coordinates.filter(location => {
+                        var distance = calculateDistance(bestCenter[0], bestCenter[1], location[0], location[1]);
+                        return distance <= radius;
+                    });
+                }
+            }
 
             // Calculate distances between coordinates
             var distances = [];
@@ -116,21 +168,22 @@
             result.innerHTML = "<h2>Optimized Route:</h2>";
             var routeText = "";
             for (var k = 0; k < route.length; k++) {
-                var location = coordinates[route[k]];
-                result.innerHTML += location[0] + ", " + location[1] + "<br>";
-                routeText += location[0] + ", " + location[1] + "\n";
+              var location = coordinates[route[k]];
+              var locationId = "location-" + k;
+              result.innerHTML +=
+                '<div class="location" id="' +
+                locationId +
+                '">' +
+                '<span>' +
+                location[0] +
+                ", " +
+                location[1] +
+                '</span>' +
+                '<button onclick="copyLocation(\'' +
+                locationId +
+                "')\">Copy</button></div>";
+              routeText += location[0] + ", " + location[1] + "\n";
             }
-
-            // Copy the optimized route to the clipboard
-            var tempInput = document.createElement("textarea");
-            tempInput.style.position = "absolute";
-            tempInput.style.left = "-9999px";
-            tempInput.style.top = "0";
-            tempInput.value = routeText;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand("copy");
-            document.body.removeChild(tempInput);
         }
 
         function calculateDistance(lat1, lng1, lat2, lng2) {
@@ -153,27 +206,58 @@
         function optimizeRoute(distances) {
             var numLocations = distances.length;
             var visited = Array(numLocations).fill(false);
-            var route = [0]; // Start with the first location as the starting point
-            visited[0] = true;
+            var route = []; // Start with an empty route
+
+            // Find the shortest path using the nearest neighbor heuristic
+            var currentLocation = getRandomLocation(distances.length);
+            visited[currentLocation] = true;
+            route.push(currentLocation);
 
             while (route.length < numLocations) {
-                var lastLocation = route[route.length - 1];
                 var nextLocation = -1;
                 var minDistance = Number.MAX_VALUE;
 
                 for (var i = 0; i < numLocations; i++) {
-                    if (!visited[i] && distances[lastLocation][i] < minDistance) {
+                    if (!visited[i] && distances[currentLocation][i] < minDistance) {
                         nextLocation = i;
-                        minDistance = distances[lastLocation][i];
+                        minDistance = distances[currentLocation][i];
                     }
                 }
 
-                route.push(nextLocation);
-                visited[nextLocation] = true;
+                if (nextLocation !== -1) {
+                    visited[nextLocation] = true;
+                    route.push(nextLocation);
+                    currentLocation = nextLocation;
+                }
             }
 
             return route;
         }
+
+        function getRandomLocation(numLocations) {
+            return Math.floor(Math.random() * numLocations);
+        }
+
+        function copyLocation(locationId) {
+          var locationElement = document.getElementById(locationId);
+          var coordinates = locationElement.innerText.split(",");
+          var latitude = coordinates[0].trim();
+          var longitude = coordinates[1].trim();
+
+          var isStrikethrough = locationElement.style.textDecoration === "line-through";
+
+          if (isStrikethrough) {
+            // Remove the strikethrough line
+            locationElement.style.textDecoration = "";
+          } else {
+            // Copy the coordinates to the clipboard
+            navigator.clipboard.writeText(latitude + ", " + longitude);
+
+            // Apply the strikethrough line
+            locationElement.style.textDecoration = "line-through";
+          }
+}
+
     </script>
 </body>
 </html>
